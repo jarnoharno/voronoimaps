@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Voronoi</title>
+<script src="http://maps.googleapis.com/maps/api/js"></script>
+<script src="rhill-voronoi-core.js"></script>
+<script src="voronoimaps.js"></script>
+<script src="data.js"></script>
+<script>
+
+// map center
+var center = mean(sites);
+
+function initialize() {
+
+  // initialize
+  var voronoi = initVoronoi();
+
+  // set map properties
+  var mapProp = {
+    center: arrayToLatLng(center),
+    zoom: 12,
+    mapTypeId: google.maps.MapTypeId.ROADMAP
+  };
+  map = new google.maps.Map(document.getElementById("googleMap"), mapProp);
+
+  google.maps.event.addListenerOnce(map, 'idle', function() {
+    /* Huge fixed bounding box Doesn't work well because of the pseudo-mercator
+       projection used in google maps
+    var bbox = {
+      xl: -150,
+      xr:  180,
+      yt: -80,
+      yb:  80
+    };
+    */
+    var bbox = mapBbox(map);
+    var polygons = voronoi.compute(labels, sites, bbox);
+    polygons.forEach(function(polygon) {
+      polygon.setMap(map);
+    });
+    sites.forEach(function(site) {
+      var marker = new google.maps.Marker({
+        position: arrayToLatLng(site)
+      });
+      marker.setMap(map);
+    });
+  });
+}
+
+google.maps.event.addDomListener(window, 'load', initialize);
+</script>
+<link rel="stylesheet" type="text/css" href="voronoi.css">
+
+</head>
+
+<body>
+<div id="googleMap"></div>
+</body>
+</html>
